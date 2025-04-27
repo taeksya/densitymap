@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="./resources/ol.css">
+        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+        <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+        <link rel="stylesheet" href="./resources/qgis2web.css">
+        <style>
+        html, body {
+            background-color: #ffffff;
+        }
+        .ol-control > * {
+            background-color: #f8f8f8!important;
+            color: #444444!important;
+            border-radius: 0px;
+        }
+        .ol-attribution a, .gcd-gl-input::placeholder, .search-layer-input-search::placeholder {
+            color: #444444!important;
+        }
+        .search-layer-input-search {
+            background-color: #f8f8f8!important;
+        }
+        .ol-control > *:focus, .ol-control >*:hover {
+            background-color: rgba(248, 248, 248, 0.7)!important;
+        } 
+        .ol-control {
+            background-color: rgba(255,255,255,.4) !important;
+            padding: 2px !important;
+        } 
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        .legend {
+            position: absolute;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            z-index: 1000;
+            width: 300px;
+            font-family: 'Aptos', sans-serif;
+        }
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+            text-align: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .legend-image {
+            width: auto;
+            height: auto;
+            margin-right: 10px;
+            object-fit: initial;
+        }
+        .legend-text {
+            font-size: 14px;
+        }
+        .map-title {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-family: 'Aptos', sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 1000;
+            border: 1px solid #444;
+        }
+        .custom-popup {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            border: 2px solid #444;
+            min-width: 280px;
+            max-width: 350px;
+            font-family: 'Aptos', sans-serif;
+        }
+        .custom-popup-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 16px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+        }
+        .chart-container {
+            width: 100%;
+            height: 220px;
+            margin-bottom: 15px;
+        }
+        .popup-info {
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .popup-closer {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 18px;
+            color: #444;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .popup-closer:hover {
+            color: #000;
+        }
+        .attributes-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+        .attributes-table th {
+            text-align: left;
+            padding: 5px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+        }
+        .attributes-table td {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        </style>
+        <title>Карта плотности населения Новосибирской области с возрастной структурой</title>
+    </head>
+    <body>
+        <div id="map">
+            <div class="map-title">Карта плотности населения Новосибирской области с возрастной структурой</div>
+            <div class="legend">
+                <div class="legend">
+                    <div class="legend-title">Условные обозначения</div>
+                    
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/0.png" alt="Граница Новосибирской области">
+                        <div class="legend-text">Граница Новосибирской области</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/1_0.png" alt="Плотность">
+                        <div class="legend-text">Плотность 1-6 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/1_1.png" alt="Плотность">
+                        <div class="legend-text">Плотность 6-16 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/1_2.png" alt="Плотность">
+                        <div class="legend-text">Плотность 16-231 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/1_3.png" alt="Плотность">
+                        <div class="legend-text">Плотность 231-762 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/1_4.png" alt="Плотность">
+                        <div class="legend-text">Плотность 762-1276 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/2.png" alt="Гидрография">
+                        <div class="legend-text">Реки</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/4.png" alt="Гидрография">
+                        <div class="legend-text">Озера</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/3.png" alt="Новосибирская Агломерация">
+                        <div class="legend-text">Новосибирская Агломерация</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/5_0.png" alt="Населенные пункты">
+                        <div class="legend-text">Число жителей менее 5 000 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/5_1.png" alt="Населенные пункты">
+                        <div class="legend-text">Число жителей 5 000 - 10 000 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/5_2.png" alt="Населенные пункты">
+                        <div class="legend-text">Число жителей 10 000 - 50 000 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/5_3.png" alt="Населенные пункты">
+                        <div class="legend-text">Число жителей 50 000 - 100 000 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/5_4.png" alt="Населенные пункты">
+                        <div class="legend-text">Число жителей 100 000 - 500 000 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/5_5.png" alt="Населенные пункты">
+                        <div class="legend-text">Число жителей 500 000 - 1 000 000 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/5_6.png" alt="Населенные пункты">
+                        <div class="legend-text">Число жителей более 1 000 000 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <img class="legend-image" src="styles/legend/10000_6.png" alt="Постоянное население">
+                        <div class="legend-text">Постоянное население на 10 000 чел.</div>
+                    </div>
+                    <div class="legend-item">
+                        <div style="width: 20px; height: 20px; margin-right: 10px; background: rgba(255, 99, 132, 0.7); border: 1px solid rgba(255, 99, 132, 1);"></div>
+                        <div class="legend-text">1-18 лет</div>
+                    </div>
+                    <div class="legend-item">
+                        <div style="width: 20px; height: 20px; margin-right: 10px; background: rgba(54, 162, 235, 0.7); border: 1px solid rgba(54, 162, 235, 1);"></div>
+                        <div class="legend-text">18-79 лет</div>
+                    </div>
+            </div>
+        </div>
+
+        <script src="resources/qgis2web_expressions.js"></script>
+        <script src="./resources/functions.js"></script>
+        <script src="./resources/ol.js"></script>
+        <script src="./resources/ol-layerswitcher.js"></script>
+        <script src="layers/0.js"></script>
+        <script src="layers/1.js"></script>
+        <script src="layers/2.js"></script>
+        <script src="layers/3.js"></script>
+        <script src="layers/4.js"></script>
+        <script src="layers/5.js"></script>
+        <script src="layers/10000_6.js"></script>
+        <script src="layers/10000_7.js"></script>
+        <script src="styles/0_style.js"></script>
+        <script src="styles/1_style.js"></script>
+        <script src="styles/2_style.js"></script>
+        <script src="styles/3_style.js"></script>
+        <script src="styles/4_style.js"></script>
+        <script src="styles/5_style.js"></script>
+        <script src="styles/10000_6_style.js"></script>
+        <script src="styles/10000_7_style.js"></script>
+        <script src="./layers/layers.js" type="text/javascript"></script>
+        <script src="./resources/Autolinker.min.js"></script>
+        <script src="./resources/qgis2web.js"></script>
+        
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+
+                if (typeof popup !== 'undefined') {
+                    map.removeOverlay(popup);
+                }
+
+
+                const popupContainer = document.createElement('div');
+                popupContainer.className = 'custom-popup';
+                document.body.appendChild(popupContainer);
+
+                const customPopup = new ol.Overlay({
+                    element: popupContainer,
+                    autoPan: {
+                        animation: {
+                            duration: 250
+                        }
+                    },
+                    positioning: 'bottom-center',
+                    stopEvent: false
+                });
+                map.addOverlay(customPopup);
+
+
+                function showDistrictInfo(feature, coordinate) {
+                    const age1_18 = feature.get('1-18') || 0;
+                    const age18_79 = feature.get('18-79') || 0;
+                    const total = feature.get('population') || 0;
+                    
+                    const name = feature.get('name') || feature.get('NAME') || feature.get('название') || 'Район';
+                    
+  
+                    const properties = feature.getProperties();
+                    const excludedProps = ['geometry', '1-18', '18-79'];
+                    
+
+                    let attributesHtml = '<table class="attributes-table"><tbody>';
+                    for (const key in properties) {
+                        if (!excludedProps.includes(key) && typeof properties[key] !== 'object' && properties[key] !== null) {
+                            attributesHtml += `
+                                <tr>
+                                    <th>${key}</th>
+                                    <td>${properties[key]}</td>
+                                </tr>
+                            `;
+                        }
+                    }
+                    attributesHtml += '</tbody></table>';
+
+                    // Формируем содержимое popup
+                    popupContainer.innerHTML = `
+                        <a href="#" class="popup-closer">×</a>
+                        <div class="custom-popup-title">${name}</div>
+                        <div class="chart-container">
+                            <canvas id="districtChart"></canvas>
+                        </div>
+                        <div class="popup-info">
+                            <div><strong>1-18 лет:</strong> ${age1_18.toLocaleString()} чел. (${total > 0 ? (age1_18/total*100).toFixed(1) : 0}%)</div>
+                            <div><strong>18-79 лет:</strong> ${age18_79.toLocaleString()} чел. (${total > 0 ? (age18_79/total*100).toFixed(1) : 0}%)</div>
+                        </div>
+                        ${attributesHtml}
+                    `;
+
+                    // Обработчик закрытия popup
+                    popupContainer.querySelector('.popup-closer').onclick = function(e) {
+                        customPopup.setPosition(undefined);
+                        e.preventDefault();
+                    };
+
+                    // Создаем диаграмму (только две возрастные группы)
+                    const ctx = document.getElementById('districtChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['1-18 лет', '18-79 лет'],
+                            datasets: [{
+                                data: [age1_18, age18_79],
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.7)',
+                                    'rgba(54, 162, 235, 0.7)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '60%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 12,
+                                        padding: 15,
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const label = context.label || '';
+                                            const value = context.raw || 0;
+                                            const percentage = Math.round((value / total) * 100);
+                                            return `${label}: ${value.toLocaleString()} чел. (${percentage}%)`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // Показываем popup
+                    customPopup.setPosition(coordinate);
+                }
+
+                // Обработчик клика по карте
+                map.on('click', function(evt) {
+                    const feature = map.forEachFeatureAtPixel(evt.pixel, function(feature) {
+                        if (feature && (feature.get('1-18') !== undefined || feature.get('18-79') !== undefined)) {
+                            return feature;
+                        }
+                    });
+                    
+                    if (feature) {
+                        showDistrictInfo(feature, evt.coordinate);
+                    } else {
+                        customPopup.setPosition(undefined);
+                    }
+                });
+
+                // Меняем курсор при наведении на объект
+                map.on('pointermove', function(evt) {
+                    if (evt.dragging) return;
+                    const pixel = map.getEventPixel(evt.originalEvent);
+                    const hit = map.hasFeatureAtPixel(pixel);
+                    map.getTarget().style.cursor = hit ? 'pointer' : '';
+                });
+            });
+        </script>
+    </body>
+</html>
